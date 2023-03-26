@@ -1,0 +1,74 @@
+<!--
+ * @Author: fengfuyuyang
+ * @Email: fengfuyuyang@outlook.com
+ * @Date: 2023-03-26 12:15:58
+ * @FilePath: index.html
+ *
+ * Copyright (c) 2023 by fengfuyuyang@outlook.com, All Rights Reserved.
+-->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>search engine</title>
+    <link rel="stylesheet" href="./css/site.css"> <!-- 引入样式表 -->
+    <script src="./js/jquery-3.6.4.min.js"></script> <!-- 引入jQuery库 -->
+</head>
+<body>
+    <div class="searchBlock">
+        <form id="searchForm">
+            <div class="searchBar">
+                <input type="text" placeholder="Search..." id="searchInput">
+                <button type="submit" class="searchIcon"></button>
+            </div>
+        </form>
+    </div>
+    <!-- 显示搜索结果 -->
+    <div id="resultWrapper"></div>
+    <script>
+        $(function() {
+            const searchForm = document.getElementById('searchForm');
+            const searchInput = document.getElementById('searchInput');
+            const resultWrapper = document.getElementById('resultWrapper');
+
+            searchForm.addEventListener('submit', (e) => { // 点击搜索按钮时，触发表单提交事件
+                e.preventDefault(); // 阻止默认行为
+                const searchContent = searchInput.value.trim(); // 去除搜索关键词两端的空格
+                if (!searchContent) return; // 如果关键词为空，则不执行
+                const formData = new FormData(searchForm); // 获取表单数据
+                formData.append('content', searchContent); // 将搜索关键词添加到表单数据中
+                fetch('php_client.php', { // 使用fetch API发送POST请求
+                    method: 'POST',
+                    body: formData,
+                })
+                    .then(response => response.json()) // 将返回的JSON字符串转换为JavaScript对象
+                    .then((data) => {
+                        renderResults(data.files); // 显示搜索结果
+                    })
+                    .catch((error) => {
+                        alert(error); // 捕获异常并弹出提示框
+                    });
+            });
+
+            function renderResults(files) { // 渲染搜索结果
+                resultWrapper.innerHTML = ''; // 先清空之前的搜索结果
+                if (!files.length) { // 如果没有搜索结果，则显示No results found
+                    resultWrapper.innerHTML = 'No results found';
+                    return; // 提前结束函数执行
+                }
+                const frag = document.createDocumentFragment(); // 创建文档片段
+                files.forEach(file => {
+                    const div = document.createElement('div'); // 创建包含搜索结果的div元素
+                    div.innerHTML = `
+                        <div class="title"><a href="${file.url}">${file.title}</a></div>
+                        <div class="summary">${file.summary}</div>
+                        <hr/>
+                    `; // 填充搜索结果
+                    frag.appendChild(div); // 将搜索结果添加到文档片段中
+                });
+                resultWrapper.appendChild(frag); // 将文档片段添加到页面中
+            }
+        });
+    </script>
+</body>
+</html>
