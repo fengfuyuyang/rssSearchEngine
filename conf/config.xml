@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+    <!-- 服务器IP地址 -->
+    <ip>127.0.0.1</ip>
+
+    <!-- 服务器端口号 -->
+    <port>8080</port>
+</config>

@@ -1,0 +1,16 @@
+set(JSONCPP_VERSION 1.9.5)
+
+set(JSONCPP_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/jsoncpp-${JSONCPP_VERSION}/build)
+
+find_path(JSONCPP_INCLUDE_DIR NAMES json/json.h HINTS ${JSONCPP_ROOT_DIR}/include)
+find_library(JSONCPP_LIBRARY NAMES jsoncpp HINTS ${JSONCPP_ROOT_DIR}/lib)
+
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(JSONCPP DEFAULT_MSG JSONCPP_LIBRARY JSONCPP_INCLUDE_DIR)
+
+if(JSONCPP_FOUND)
+    set(JSONCPP_LIBRARIES ${JSONCPP_LIBRARY})
+    set(JSONCPP_INCLUDE_DIRS ${JSONCPP_INCLUDE_DIR})
+endif()
+
+mark_as_advanced(JSONCPP_INCLUDE_DIR JSONCPP_LIBRARY)
