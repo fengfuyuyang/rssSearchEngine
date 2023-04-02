@@ -4,5 +4,13 @@
     <ip>127.0.0.1</ip>
 
     <!-- 服务器端口号 -->
-    <port>8080</port>
+    <port>8888</port>
+
+    <threadPool>
+        <!-- 线程池大小 -->
+        <size>10</size>
+
+        <!-- 线程池队列大小 -->
+        <queueSize>100</queueSize>
+    </threadPool>
 </config>
