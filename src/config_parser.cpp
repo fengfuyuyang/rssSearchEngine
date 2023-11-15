@@ -26,6 +26,10 @@ int ConfigParser::GetPort() const {
     return doc_.child("config").child("port").text().as_int();
 }
 
+int ConfigParser::GetMaxRequestNum() const {
+    return doc_.child("config").child("maxRequestNum").text().as_int();
+}
+
 int ConfigParser::GetThreadPoolSize() const {
     return doc_.child("config").child("threadPool").child("size").text().as_int();
 }

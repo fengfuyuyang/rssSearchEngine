@@ -7,18 +7,18 @@
  * Copyright (c) 2023 fengfuyuyang@outlook.com. All rights reserved.
  */
 
-#ifndef INCLUDE_TCP_SERVER_H_
-#define INCLUDE_TCP_SERVER_H_
+#pragma once
 
 #include <cstring>
 #include <unistd.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <errno.h>
-#include "config_parser.h"
-#include "thread_pool.h"
+
 #include "glog/logging.h"
 
+#include "config_parser.h"
+#include "thread_pool.h"
 namespace ffyy {
 
 class TcpServer {
@@ -47,16 +47,14 @@ public:
      */
     bool Stop();
 
+    void Test(std::shared_ptr<TcpConnection> conn);
+
 private:
     int listen_fd_; // 监听 socket
     std::string ip_; // IP 地址
     int port_; // 端口号
     bool is_running_; // 服务器是否正在运行
-    // TaskQueue task_queue_; // 任务队列
-    // ThreadPool thread_pool_; // 线程池
     std::unique_ptr<ThreadPool> thread_pool_; // 线程池
 }; // class TcpServer
 
 } // namespace ffyy
-
-#endif // INCLUDE_TCP_SERVER_H_

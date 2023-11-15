@@ -6,6 +6,9 @@
     <!-- 服务器端口号 -->
     <port>8888</port>
 
+    <!-- 服务器最大连接数 -->
+    <maxRequestNum>10</maxRequestNum>
+
     <threadPool>
         <!-- 线程池大小 -->
         <size>10</size>

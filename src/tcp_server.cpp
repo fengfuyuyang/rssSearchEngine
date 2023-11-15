@@ -10,7 +10,7 @@
 #include "tcp_server.h"
 #include "task_queue.h"
 #include "tcp_connection.h"
-#include "log.h"
+#include "config_parser.h"
 
 #include <stdexcept>
 #include <cstring>
@@ -22,23 +22,14 @@
 
 namespace ffyy {
 
-TcpServer::TcpServer(uint16_t port, int backlog, int max_thread_num)
-    : port_(port),
-      backlog_(backlog),
-      is_running_(false),
-      thread_pool_(new ThreadPool(max_thread_num)) {
+TcpServer::TcpServer() : listen_fd_(-1), ip_(""), port_(0), is_running_(false) {
 }
 
 TcpServer::~TcpServer() {
     Stop();
 }
 
-bool TcpServer::Start() {
-    if (!is_running_) {
-        throw std::runtime_error("Server is not initialized.");
-    }
-
-    int optval = 1;
+bool TcpServer::Init() {
     // 创建套接字
     listen_fd_ = socket(AF_INET, SOCK_STREAM, 0);
     if (listen_fd_ < 0) {
@@ -47,32 +38,55 @@ bool TcpServer::Start() {
     }
 
     // 设置 SO_REUSEADDR 选项，防止因为 TIME_WAIT 导致 bind 失败
+    int optval = 1;
     if (setsockopt(listen_fd_, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) < 0) {
         LOG(ERROR) << __FUNCTION__ << " Failed to set SO_REUSEADDR option. " << strerror(errno);
         return false;
     }
+
+    // 读取配置文件
+    ConfigParser config_parser("../../conf/config.xml");
+    ip_ = config_parser.GetIp();
+    port_ = config_parser.GetPort();
 
     // 绑定地址和端口号
     struct sockaddr_in server_addr;
     memset(&server_addr, 0, sizeof(server_addr));
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(port_);
-    server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+    server_addr.sin_addr.s_addr = inet_addr(ip_.c_str());
+
     if (bind(listen_fd_, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
         LOG(ERROR) << __FUNCTION__ << " Failed to bind. " << strerror(errno);
         return false;
     }
 
+    // 设置监听队列的最大长度
+    int num = config_parser.GetMaxRequestNum();
+    num = num > 0 ? num : 10;
+
     // 监听端口
-    if (listen(listen_fd_, backlog_) < 0) {
+    if (listen(listen_fd_, num) < 0) {
         LOG(ERROR) << __FUNCTION__ << " Failed to listen. " << strerror(errno);
         return false;
     }
 
-    LOG(INFO) << "Server start successfully.";
-
     is_running_ = true;
 
+    // 初始化线程池
+    thread_pool_.reset(new ThreadPool(config_parser.GetThreadPoolSize()));
+
+    LOG(INFO) << "Server init successfully.";
+
+    return true;
+}
+
+bool TcpServer::Start() {
+    if (!is_running_) {
+        throw std::runtime_error("Server is not initialized.");
+    }
+
+    // 启动线程池
     thread_pool_->Start();
 
     while (true) {
@@ -86,8 +100,11 @@ bool TcpServer::Start() {
             continue;
         }
 
+        // TaskQueue::Task task(std::bind(&TcpServer::Test, this, std::make_shared<TcpConnection>(conn_fd)));
         // 将连接请求封装成Task对象并添加到TaskQueue中
-        TaskQueue::Task task(std::make_shared<TcpConnection>(conn_fd));
+
+        auto conn = std::make_shared<TcpConnection>(conn_fd);
+        TaskQueue::Task task(conn);
         thread_pool_->AddTask(task);
     }
 
@@ -114,5 +131,8 @@ bool TcpServer::Stop() {
     return false;
 }
 
+void TcpServer::Test(std::shared_ptr<TcpConnection> conn) {
+    LOG(INFO) << "Test";
+}
 
 }  // namespace ffyy

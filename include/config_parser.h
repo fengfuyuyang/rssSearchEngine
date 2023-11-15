@@ -7,8 +7,7 @@
  * Copyright (c) 2023 fengyuyuyang@outlook.com. All rights reserved.
  */
 
-#ifndef INCLUDE_CONFIG_H_
-#define INCLUDE_CONFIG_H_
+#pragma once
 
 #include <string>
 #include "pugixml.hpp"
@@ -35,6 +34,12 @@ public:
     int GetPort() const;
 
     /**
+     * @brief 从配置文件中读取最大请求数
+     * @return int 最大请求数
+     */
+    int GetMaxRequestNum() const;
+
+    /**
      * @brief 从配置文件中读取线程池大小
      * @return int 线程池大小
      */
@@ -51,7 +56,6 @@ private:
      * @brief pugixml的文档对象
      */
     pugi::xml_document doc_;
-}; // class Config
-} // namespace ffyy
+}; // class ConfigParser
 
-#endif // INCLUDE_CONFIG_H_
+} // namespace ffyy
